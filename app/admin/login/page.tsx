@@ -44,6 +44,7 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl md:p-10">
 
         <div className="text-center">
+
           <p className="font-semibold text-orange-500">
             ADHIRAJ URJA SOLAR
           </p>
@@ -55,6 +56,7 @@ export default function AdminLoginPage() {
           <p className="mt-3 text-gray-500">
             Sign in to manage customer enquiries.
           </p>
+
         </div>
 
         <form
