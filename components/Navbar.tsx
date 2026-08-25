@@ -1,54 +1,62 @@
+import Link from "next/link";
+
 export default function Navbar() {
   return (
-    <nav className="border-b border-gray-100 bg-white">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8">
-        
-        {/* Logo */}
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-gray-900">
+    <nav className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
+
+        {/* Logo / Company Name */}
+        <Link href="/" className="group">
+          <p className="text-xl font-bold tracking-tight text-gray-950 transition group-hover:text-orange-500">
             Adhiraj Urja Solar
-          </h1>
+          </p>
 
           <p className="text-xs text-gray-500">
-            Pune, Maharashtra
+            Pune & PCMC
           </p>
-        </div>
+        </Link>
 
         {/* Desktop Navigation */}
         <div className="hidden items-center gap-8 md:flex">
-          <a
-            href="#services"
-            className="text-sm font-medium text-gray-600 transition hover:text-orange-500"
+
+          <Link
+            href="/"
+            className="text-sm font-medium text-gray-700 transition hover:text-orange-500"
           >
-            Services
-          </a>
+            Home
+          </Link>
 
           <a
-            href="#projects"
-            className="text-sm font-medium text-gray-600 transition hover:text-orange-500"
+            href="#services"
+            className="text-sm font-medium text-gray-700 transition hover:text-orange-500"
           >
-            Our Work
+            Solar Solutions
           </a>
 
           <a
             href="#about"
-            className="text-sm font-medium text-gray-600 transition hover:text-orange-500"
+            className="text-sm font-medium text-gray-700 transition hover:text-orange-500"
           >
             About Us
           </a>
 
           <a
             href="#contact"
-            className="text-sm font-medium text-gray-600 transition hover:text-orange-500"
+            className="text-sm font-medium text-gray-700 transition hover:text-orange-500"
           >
             Contact
           </a>
+
         </div>
 
-        {/* CTA */}
-        <button className="rounded-full bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600">
-          Get Free Quote
-        </button>
+        {/* Main CTA */}
+        <Link
+          href="/quotation"
+          className="rounded-full bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600 hover:shadow-md"
+        >
+          Get Your Quotation
+        </Link>
+
       </div>
     </nav>
   );
