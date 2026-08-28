@@ -19,7 +19,7 @@ export default function Home() {
       ========================================================= */}
       <section
         id="services"
-        className="bg-gray-50 px-6 py-24 lg:px-8"
+        className="premium-dots px-6 py-24 lg:px-8"
       >
         <div className="mx-auto max-w-7xl">
 
@@ -76,7 +76,7 @@ export default function Home() {
             </div>
 
             {/* On Grid */}
-            <div className="rounded-3xl bg-white p-8 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+            <div className="rounded-3xl bg-white p-8 shadow-sm transition             hover:-translate-y-1 hover:shadow-md">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-2xl">
                 ☀️
               </div>
@@ -169,7 +169,7 @@ export default function Home() {
             </p>
 
             <h2 className="mt-3 text-4xl font-bold tracking-tight text-gray-950 md:text-5xl">
-              Solar you can trust
+              Solar you can trust from quotation to installation
             </h2>
 
             <p className="mt-5 text-lg leading-8 text-gray-600">
