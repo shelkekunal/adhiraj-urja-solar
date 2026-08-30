@@ -1,65 +1,156 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+--background: #f3f0e8;
+--foreground: #17201b;
+
+--surface: #faf9f5;
+--surface-muted: #e8e3d7;
+
+--gold: #c6922e;
+--green: #61745f;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+--color-background: var(--background);
+--color-foreground: var(--foreground);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+--color-surface: var(--surface);
+--color-surface-muted: var(--surface-muted);
+
+--color-gold: var(--gold);
+--color-green: var(--green);
+
+--font-sans: var(--font-geist-sans);
+--font-mono: var(--font-geist-mono);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+background: var(--background);
+color: var(--foreground);
+font-family: Arial, Helvetica, sans-serif;
 }
 
 /* =========================================================
-   Premium background textures
-   ========================================================= */
+PREMIUM WARM GRID
+========================================================= */
 
 .premium-grid {
-  background-color: #f7f7f5;
-  background-image:
-    linear-gradient(rgba(17, 24, 39, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(17, 24, 39, 0.035) 1px, transparent 1px);
-  background-size: 48px 48px;
+background-color: #f3f0e8;
+
+background-image:
+linear-gradient(
+rgba(23, 32, 27, 0.035) 1px,
+transparent 1px
+),
+linear-gradient(
+90deg,
+rgba(23, 32, 27, 0.035) 1px,
+transparent 1px
+);
+
+background-size: 48px 48px;
 }
+
+/* =========================================================
+PREMIUM DOT TEXTURE
+========================================================= */
 
 .premium-dots {
-  background-color: #f7f7f5;
-  background-image: radial-gradient(
-    rgba(17, 24, 39, 0.08) 1px,
-    transparent 1px
-  );
-  background-size: 22px 22px;
+background-color: #f3f0e8;
+
+background-image: radial-gradient(
+rgba(23, 32, 27, 0.09) 1px,
+transparent 1px
+);
+
+background-size: 22px 22px;
 }
 
+/* =========================================================
+SOFT SOLAR GLOW
+========================================================= */
+
 .premium-glow {
-  position: relative;
-  overflow: hidden;
+position: relative;
+overflow: hidden;
 }
 
 .premium-glow::before {
-  content: "";
-  position: absolute;
-  width: 420px;
-  height: 420px;
-  top: -220px;
-  right: -120px;
-  border-radius: 9999px;
-  background: rgba(249, 115, 22, 0.08);
-  filter: blur(80px);
-  pointer-events: none;
+content: "";
+
+position: absolute;
+
+width: 500px;
+height: 500px;
+
+top: -260px;
+right: -140px;
+
+border-radius: 9999px;
+
+background: rgba(198, 146, 46, 0.12);
+
+filter: blur(90px);
+
+pointer-events: none;
+}
+
+/* =========================================================
+SECONDARY GREEN GLOW
+========================================================= */
+
+.premium-green-glow {
+position: relative;
+overflow: hidden;
+}
+
+.premium-green-glow::before {
+content: "";
+
+position: absolute;
+
+width: 450px;
+height: 450px;
+
+bottom: -250px;
+left: -150px;
+
+border-radius: 9999px;
+
+background: rgba(97, 116, 95, 0.10);
+
+filter: blur(90px);
+
+pointer-events: none;
+}
+
+/* =========================================================
+PREMIUM SURFACE
+========================================================= */
+
+.premium-surface {
+background: #faf9f5;
+
+border: 1px solid rgba(23, 32, 27, 0.08);
+
+box-shadow:
+0 10px 30px rgba(23, 32, 27, 0.05),
+0 2px 8px rgba(23, 32, 27, 0.03);
+}
+
+/* =========================================================
+SUBTLE PAPER TEXTURE
+========================================================= */
+
+.premium-paper {
+background-color: #f3f0e8;
+
+background-image:
+radial-gradient(
+rgba(23, 32, 27, 0.035) 0.7px,
+transparent 0.7px
+);
+
+background-size: 7px 7px;
 }
