@@ -30,7 +30,9 @@ const installations = [
 
 export default function Installations() {
   return (
-    <section className="relative overflow-hidden bg-[#f7f8f5] py-24">
+    <section 
+        id="installations"
+        className="relative scroll-mt-24 overflow-hidden bg-[#f7f8f5] py-24">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
 
         {/* Section Heading */}
