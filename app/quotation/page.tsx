@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -17,11 +18,30 @@ type QuotationResult = {
   customerType: CustomerType;
 };
 
+const steps = [
+  {
+    number: 1,
+    label: "Property",
+  },
+  {
+    number: 2,
+    label: "Details",
+  },
+  {
+    number: 3,
+    label: "Energy",
+  },
+  {
+    number: 4,
+    label: "System",
+  },
+];
+
 export default function QuotationPage() {
   const [step, setStep] = useState(1);
 
   const [customerType, setCustomerType] =
-    useState<CustomerType | null>(null);
+    useState<CustomerType>("residential");
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -30,9 +50,8 @@ export default function QuotationPage() {
   const [monthlyBill, setMonthlyBill] = useState("");
   const [monthlyUnits, setMonthlyUnits] = useState("");
 
-  const [systemType, setSystemType] = useState<
-    "on_grid" | "off_grid"
-  >("on_grid");
+  const [systemType, setSystemType] =
+    useState<"on_grid" | "off_grid">("on_grid");
 
   const [quotation, setQuotation] =
     useState<QuotationResult | null>(null);
@@ -41,22 +60,9 @@ export default function QuotationPage() {
   const [isSaving, setIsSaving] = useState(false);
 
   /*
-    ============================================================
-    BILL / UNITS CONVERSION
-    ============================================================
-
-    Existing business assumption:
-    ₹12 electricity cost per unit.
-
-    Bill -> Units:
-    Math.ceil(bill / 12)
-
-    Units -> Bill:
-    Math.ceil(units * 12)
-
-    The field currently being edited becomes the source.
-  */
-
+   * BILL → UNITS
+   * Existing calculation logic preserved.
+   */
   function handleBillChange(value: string) {
     const cleanValue = value.replace(/\D/g, "");
 
@@ -76,6 +82,10 @@ export default function QuotationPage() {
     }
   }
 
+  /*
+   * UNITS → BILL
+   * Existing calculation logic preserved.
+   */
   function handleUnitsChange(value: string) {
     const cleanValue = value.replace(/\D/g, "");
 
@@ -95,68 +105,81 @@ export default function QuotationPage() {
     }
   }
 
-  function handleContinue() {
-    if (step === 1) {
-      if (!customerType) {
-        setError(
-          "Please select whether this installation is residential or commercial."
-        );
-        return;
-      }
+  function validateCurrentStep() {
+    setError("");
 
-      setError("");
-      setStep(2);
-      return;
+    if (step === 1) {
+      return true;
     }
 
     if (step === 2) {
       if (!name.trim()) {
         setError("Please enter your name.");
-        return;
+        return false;
       }
 
       if (!/^[6-9]\d{9}$/.test(phone)) {
-        setError(
-          "Please enter a valid 10-digit mobile number."
-        );
-        return;
+        setError("Please enter a valid 10-digit mobile number.");
+        return false;
       }
 
       if (!/^[1-9]\d{5}$/.test(pinCode)) {
-        setError(
-          "Please enter a valid 6-digit PIN code."
-        );
-        return;
+        setError("Please enter a valid 6-digit PIN code.");
+        return false;
       }
 
-      setError("");
-      setStep(3);
-      return;
+      return true;
     }
 
-    calculateQuotation();
+    if (step === 3) {
+      const bill = Number(monthlyBill);
+      const units = Number(monthlyUnits);
+
+      if ((!monthlyBill || bill <= 0) && (!monthlyUnits || units <= 0)) {
+        setError("Please enter your monthly electricity bill or units.");
+        return false;
+      }
+
+      return true;
+    }
+
+    return true;
+  }
+
+  function nextStep() {
+    if (!validateCurrentStep()) return;
+
+    setError("");
+
+    if (step < 4) {
+      setStep((current) => current + 1);
+    }
+  }
+
+  function previousStep() {
+    setError("");
+
+    if (step > 1) {
+      setStep((current) => current - 1);
+    }
   }
 
   async function calculateQuotation() {
+    if (!validateCurrentStep()) return;
+
     setError("");
+    setIsSaving(true);
+
+    /*
+     * ---------------------------------------------------------
+     * EXISTING PROVEN CALCULATION LOGIC
+     * DO NOT CHANGE
+     * ---------------------------------------------------------
+     */
 
     const bill = Number(monthlyBill);
     const units = Number(monthlyUnits);
 
-    if (!monthlyBill && !monthlyUnits) {
-      setError(
-        "Please enter your monthly bill, monthly units, or both."
-      );
-      return;
-    }
-
-    /*
-      Since bill and units are now automatically synchronized,
-      calculatedUnits will normally already be an integer.
-
-      Math.ceil() is intentionally retained here as a final
-      safeguard before the solar calculation.
-    */
     let calculatedUnits = units;
 
     if (!monthlyUnits && bill > 0) {
@@ -165,29 +188,9 @@ export default function QuotationPage() {
 
     calculatedUnits = Math.ceil(calculatedUnits);
 
-    if (calculatedUnits <= 0) {
-      setError("Please enter a valid electricity usage.");
-      return;
-    }
-
-    if (!customerType) {
-      setError(
-        "Please select an installation type."
-      );
-      return;
-    }
-
-    /*
-      ============================================================
-      EXISTING SOLAR CALCULATION — DO NOT CHANGE
-      ============================================================
-    */
-
     const requiredSystem = calculatedUnits / 120;
 
-    const recommendedSystem = Math.ceil(
-      requiredSystem
-    );
+    const recommendedSystem = Math.ceil(requiredSystem);
 
     const estimatedGeneration =
       recommendedSystem * 120 * 12;
@@ -195,16 +198,13 @@ export default function QuotationPage() {
     const estimatedSavings =
       estimatedGeneration * 12;
 
-    let subsidy = 0;
     let systemCost = 0;
+    let subsidy = 0;
 
     /*
-      Residential On-Grid:
-      Current subsidy/cost assumptions.
-
-      Commercial:
-      Currently treated without government subsidy.
-    */
+     * RESIDENTIAL + ON GRID
+     * Existing pricing/subsidy logic preserved.
+     */
 
     if (
       customerType === "residential" &&
@@ -233,21 +233,73 @@ export default function QuotationPage() {
         subsidy = 78000;
       }
     } else {
-      systemCost =
-        recommendedSystem * 80000;
+      /*
+       * COMMERCIAL OR OFF GRID
+       * Existing pricing logic preserved.
+       */
 
+      systemCost = recommendedSystem * 80000;
       subsidy = 0;
     }
 
-    const estimatedCost =
-      systemCost - subsidy;
+    const estimatedCost = systemCost - subsidy;
 
     const estimatedPayback =
       estimatedSavings > 0
         ? estimatedCost / estimatedSavings
         : 0;
 
-    const result: QuotationResult = {
+    /*
+     * ---------------------------------------------------------
+     * SUPABASE
+     * ---------------------------------------------------------
+     */
+
+    const supabase = createSupabaseBrowserClient();
+
+    const { error: insertError } = await supabase
+      .from("leads")
+      .insert({
+        name: name.trim(),
+        phone: phone.trim(),
+        customer_type: customerType,
+
+        monthly_bill: monthlyBill
+          ? Math.ceil(Number(monthlyBill))
+          : null,
+
+        monthly_units: calculatedUnits,
+
+        pin_code: pinCode.trim(),
+
+        system_type: systemType,
+
+        recommended_system: recommendedSystem,
+        estimated_generation: estimatedGeneration,
+        estimated_savings: estimatedSavings,
+
+        subsidy,
+        estimated_cost: estimatedCost,
+        estimated_payback: estimatedPayback,
+
+        status: "new",
+      });
+
+    if (insertError) {
+      console.error(
+        "LEAD INSERT ERROR:",
+        insertError
+      );
+
+      setError(
+        "We couldn't save your quotation. Please try again."
+      );
+
+      setIsSaving(false);
+      return;
+    }
+
+    setQuotation({
       monthlyUnits: calculatedUnits,
       recommendedSystem,
       estimatedGeneration,
@@ -256,116 +308,15 @@ export default function QuotationPage() {
       estimatedCost,
       systemType,
       customerType,
-    };
+    });
 
-    setIsSaving(true);
-
-    try {
-      const supabase =
-        createSupabaseBrowserClient();
-
-      const { error: insertError } =
-        await supabase
-          .from("leads")
-          .insert({
-            name: name.trim(),
-            phone: phone.trim(),
-
-            /*
-              Email intentionally removed from this
-              quotation flow.
-            */
-
-            customer_type: customerType,
-
-            monthly_bill: monthlyBill
-              ? Math.ceil(Number(monthlyBill))
-              : null,
-
-            monthly_units: calculatedUnits,
-
-            pin_code: pinCode.trim(),
-
-            system_type: systemType,
-
-            recommended_system:
-              recommendedSystem,
-
-            estimated_generation:
-              estimatedGeneration,
-
-            estimated_savings:
-              estimatedSavings,
-
-            subsidy: subsidy,
-
-            estimated_cost:
-              estimatedCost,
-
-            estimated_payback:
-              estimatedPayback,
-
-            status: "new",
-          });
-
-      if (insertError) {
-        console.error(
-          "LEAD INSERT ERROR:",
-          {
-            message: insertError.message,
-            details: insertError.details,
-            hint: insertError.hint,
-            code: insertError.code,
-          }
-        );
-
-        setError(
-          "We couldn't save your quotation. Please try again."
-        );
-
-        return;
-      }
-
-      setQuotation(result);
-      setStep(4);
-    } catch (err) {
-      console.error(
-        "QUOTATION ERROR:",
-        err
-      );
-
-      setError(
-        "Something went wrong. Please try again."
-      );
-    } finally {
-      setIsSaving(false);
-    }
+    setIsSaving(false);
   }
 
-  function formatCurrency(value: number) {
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
-    }).format(value);
-  }
-
-  function handleBack() {
-    setError("");
-
-    if (step === 2) {
-      setStep(1);
-    } else if (step === 3) {
-      setStep(2);
-    } else if (step === 4) {
-      setStep(3);
-    }
-  }
-
-  function handleStartAgain() {
+  function resetQuotation() {
     setStep(1);
 
-    setCustomerType(null);
+    setCustomerType("residential");
 
     setName("");
     setPhone("");
@@ -380,764 +331,1205 @@ export default function QuotationPage() {
     setError("");
   }
 
+  function formatCurrency(value: number) {
+    return new Intl.NumberFormat("en-IN", {
+      maximumFractionDigits: 0,
+    }).format(value);
+  }
+
+  /*
+   * ---------------------------------------------------------
+   * RESULT SCREEN
+   * ---------------------------------------------------------
+   */
+
+  if (quotation) {
+    const payback =
+      quotation.estimatedSavings > 0
+        ? quotation.estimatedCost /
+          quotation.estimatedSavings
+        : 0;
+
+    return (
+      <main className="min-h-screen overflow-hidden bg-[#f7f5ef] text-[#17201b]">
+
+        {/* Background atmosphere */}
+        <div className="pointer-events-none fixed inset-0 overflow-hidden">
+          <div className="absolute -right-40 -top-40 h-[500px] w-[500px] rounded-full bg-[#c6922e]/10 blur-3xl" />
+
+          <div className="absolute -bottom-40 -left-40 h-[500px] w-[500px] rounded-full bg-[#61745f]/10 blur-3xl" />
+
+          <div
+            className="absolute inset-0 opacity-[0.035]"
+            style={{
+              backgroundImage:
+                "linear-gradient(#17201b 1px, transparent 1px), linear-gradient(90deg, #17201b 1px, transparent 1px)",
+              backgroundSize: "40px 40px",
+            }}
+          />
+        </div>
+
+        <div className="relative mx-auto max-w-6xl px-5 py-8 sm:px-8 sm:py-12">
+
+          {/* Header */}
+          <div className="mb-10 flex items-center justify-between">
+
+            <Link
+              href="/"
+              className="group flex items-center"
+            >
+              <div className="relative h-11 w-40 sm:h-12 sm:w-44">
+                <Image
+                  src="/adhiraj-urja-solar-logo.png"
+                  alt="Adhiraj Urja Solar"
+                  fill
+                  sizes="176px"
+                  className="object-contain object-left"
+                  priority
+                />
+              </div>
+            </Link>
+
+            <span className="rounded-full border border-[#17201b]/10 bg-white/70 px-4 py-2 text-xs font-semibold tracking-wide backdrop-blur">
+              Solar Assessment
+            </span>
+          </div>
+
+          {/* Result Hero */}
+          <section className="relative overflow-hidden rounded-[2rem] bg-[#17201b] p-7 text-white shadow-2xl sm:p-12">
+
+            <div className="absolute right-[-100px] top-[-100px] h-[300px] w-[300px] rounded-full border border-[#d5a94b]/20" />
+
+            <div className="absolute right-[-55px] top-[-55px] h-[210px] w-[210px] rounded-full border border-[#d5a94b]/20" />
+
+            <div className="relative grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+
+              <div>
+
+                <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-[#d5a94b]">
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-[#d5a94b]" />
+                  Your solar assessment is ready
+                </div>
+
+                <p className="mb-3 text-sm text-white/50">
+                  Hello, {name.split(" ")[0]}
+                </p>
+
+                <h1 className="max-w-2xl text-4xl font-semibold leading-tight tracking-tight sm:text-6xl">
+                  Your home can run
+                  <span className="block text-[#d5a94b]">
+                    on cleaner energy.
+                  </span>
+                </h1>
+
+                <p className="mt-5 max-w-xl text-sm leading-7 text-white/60 sm:text-base">
+                  Based on your electricity consumption,
+                  we recommend a solar system designed
+                  around your current energy requirement.
+                </p>
+              </div>
+
+              <div className="relative flex justify-center">
+
+                <div className="flex h-56 w-56 flex-col items-center justify-center rounded-full border border-[#d5a94b]/30 bg-[#d5a94b]/5 shadow-[0_0_80px_rgba(198,146,46,0.12)]">
+
+                  <p className="text-xs uppercase tracking-[0.25em] text-white/50">
+                    Recommended
+                  </p>
+
+                  <div className="mt-2 flex items-baseline gap-2">
+
+                    <span className="text-7xl font-semibold text-[#d5a94b]">
+                      {quotation.recommendedSystem}
+                    </span>
+
+                    <span className="text-xl text-white/60">
+                      kW
+                    </span>
+
+                  </div>
+
+                  <p className="mt-2 text-xs text-white/40">
+                    solar capacity
+                  </p>
+
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Metrics */}
+          <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+
+            <MetricCard
+              label="Annual Generation"
+              value={`${formatCurrency(
+                quotation.estimatedGeneration
+              )}`}
+              suffix="units"
+              delay="0ms"
+            />
+
+            <MetricCard
+              label="Estimated Savings"
+              value={`₹${formatCurrency(
+                quotation.estimatedSavings
+              )}`}
+              suffix="/ year"
+              delay="80ms"
+            />
+
+            <MetricCard
+              label="Government Subsidy"
+              value={`₹${formatCurrency(
+                quotation.subsidy
+              )}`}
+              suffix=""
+              delay="160ms"
+            />
+
+            <MetricCard
+              label="Estimated Payback"
+              value={payback.toFixed(1)}
+              suffix="years"
+              delay="240ms"
+            />
+
+          </section>
+
+          {/* Financial breakdown */}
+          <section className="mt-6 rounded-[2rem] border border-[#17201b]/10 bg-white/80 p-7 shadow-xl shadow-[#17201b]/5 backdrop-blur sm:p-9">
+
+            <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+
+              <div>
+
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#61745f]">
+                  Investment overview
+                </p>
+
+                <h2 className="mt-2 text-2xl font-semibold">
+                  Your solar investment
+                </h2>
+
+              </div>
+
+              <span className="rounded-full bg-[#61745f]/10 px-4 py-2 text-xs font-semibold text-[#61745f]">
+                {quotation.systemType === "on_grid"
+                  ? "On-Grid System"
+                  : "Off-Grid System"}
+              </span>
+
+            </div>
+
+            <div className="my-8 h-px bg-[#17201b]/10" />
+
+            <div className="space-y-5">
+
+              <PriceRow
+                label="System cost"
+                value={`₹${formatCurrency(
+                  quotation.estimatedCost +
+                    quotation.subsidy
+                )}`}
+              />
+
+              <PriceRow
+                label="Government subsidy"
+                value={`− ₹${formatCurrency(
+                  quotation.subsidy
+                )}`}
+                positive
+              />
+
+              <div className="h-px bg-[#17201b]/10" />
+
+              <div className="flex items-center justify-between gap-4">
+
+                <span className="text-base font-semibold">
+                  Estimated final cost
+                </span>
+
+                <span className="text-2xl font-semibold text-[#17201b]">
+                  ₹{formatCurrency(
+                    quotation.estimatedCost
+                  )}
+                </span>
+
+              </div>
+            </div>
+          </section>
+
+          {/* Bottom CTA */}
+          <section className="mt-6 grid gap-4 sm:grid-cols-2">
+
+            <button
+              onClick={resetQuotation}
+              className="group rounded-2xl border border-[#17201b]/10 bg-white px-6 py-5 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#c6922e]/40 hover:shadow-lg"
+            >
+
+              <span className="text-xs uppercase tracking-[0.2em] text-[#61745f]">
+                Recalculate
+              </span>
+
+              <span className="mt-1 block text-lg font-semibold">
+                Change my details
+
+                <span className="ml-2 transition-transform duration-300 group-hover:translate-x-1">
+                  →
+                </span>
+
+              </span>
+
+            </button>
+
+            <Link
+              href="/"
+              className="group rounded-2xl bg-[#17201b] px-6 py-5 text-left text-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:bg-[#243229] hover:shadow-xl"
+            >
+
+              <span className="text-xs uppercase tracking-[0.2em] text-[#d5a94b]">
+                Adhiraj Urja Solar
+              </span>
+
+              <span className="mt-1 block text-lg font-semibold">
+
+                Return to home
+
+                <span className="ml-2 transition-transform duration-300 group-hover:translate-x-1">
+                  →
+                </span>
+
+              </span>
+
+            </Link>
+
+          </section>
+
+          <p className="mt-8 text-center text-xs leading-6 text-[#17201b]/40">
+            This quotation is an estimate based on the information
+            provided. Final system sizing and pricing may vary after
+            site assessment.
+          </p>
+
+        </div>
+      </main>
+    );
+  }
+
+  /*
+   * ---------------------------------------------------------
+   * FORM SCREEN
+   * ---------------------------------------------------------
+   */
+
   return (
-    <main className="premium-paper min-h-screen px-6 py-12 sm:py-16">
-      <div className="mx-auto max-w-3xl">
+    <main className="min-h-screen overflow-hidden bg-[#f7f5ef] text-[#17201b]">
 
-        {/* =====================================================
-            PROGRESS
-        ====================================================== */}
+      {/* Ambient background */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
 
-        <div className="mb-10 flex items-center justify-center gap-2 text-xs sm:gap-3 sm:text-sm">
+        <div className="absolute -right-40 -top-40 h-[500px] w-[500px] animate-[pulse_8s_ease-in-out_infinite] rounded-full bg-[#c6922e]/10 blur-3xl" />
 
-          <span
-            className={
-              step === 1
-                ? "font-semibold text-[#b98224]"
-                : "font-semibold text-[#61745f]"
-            }
+        <div className="absolute -bottom-40 -left-40 h-[500px] w-[500px] rounded-full bg-[#61745f]/10 blur-3xl" />
+
+        <div
+          className="absolute inset-0 opacity-[0.035]"
+          style={{
+            backgroundImage:
+              "linear-gradient(#17201b 1px, transparent 1px), linear-gradient(90deg, #17201b 1px, transparent 1px)",
+            backgroundSize: "40px 40px",
+          }}
+        />
+
+      </div>
+
+      <div className="relative mx-auto max-w-6xl px-5 py-7 sm:px-8 sm:py-10">
+
+        {/* Top navigation */}
+        <div className="flex items-center justify-between">
+
+          <Link
+            href="/"
+            className="group flex items-center"
           >
-            {step === 1
-              ? "1. Installation"
-              : "✓ Installation"}
-          </span>
+            <div className="relative h-11 w-40 sm:h-12 sm:w-44">
 
-          <span className="text-[#17201b]/20">
-            →
-          </span>
+              <Image
+                src="/adhiraj-urja-solar-logo.png"
+                alt="Adhiraj Urja Solar"
+                fill
+                sizes="176px"
+                className="object-contain object-left transition-opacity duration-300 group-hover:opacity-80"
+                priority
+              />
 
-          <span
-            className={
-              step === 2
-                ? "font-semibold text-[#b98224]"
-                : step > 2
-                ? "font-semibold text-[#61745f]"
-                : "text-[#17201b]/35"
-            }
+            </div>
+          </Link>
+
+          <Link
+            href="/"
+            className="hidden text-sm font-medium text-[#17201b]/50 transition hover:text-[#17201b] sm:block"
           >
-            {step > 2
-              ? "✓ Your Details"
-              : "2. Your Details"}
-          </span>
-
-          <span className="text-[#17201b]/20">
-            →
-          </span>
-
-          <span
-            className={
-              step === 3
-                ? "font-semibold text-[#b98224]"
-                : step > 3
-                ? "font-semibold text-[#61745f]"
-                : "text-[#17201b]/35"
-            }
-          >
-            {step > 3
-              ? "✓ Electricity"
-              : "3. Electricity"}
-          </span>
-
-          <span className="text-[#17201b]/20">
-            →
-          </span>
-
-          <span
-            className={
-              step === 4
-                ? "font-semibold text-[#b98224]"
-                : "text-[#17201b]/35"
-            }
-          >
-            4. Quotation
-          </span>
+            ← Back to home
+          </Link>
 
         </div>
 
-        {/* =====================================================
-            MAIN CARD
-        ====================================================== */}
+        {/* Main layout */}
+        <div className="mt-10 grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
 
-        <div className="premium-surface rounded-[32px] p-7 sm:p-10">
+          {/* Left editorial panel */}
+          <aside className="relative overflow-hidden rounded-[2rem] bg-[#17201b] p-8 text-white shadow-2xl sm:p-10 lg:sticky lg:top-8">
 
-          {/* Error */}
+            <div className="absolute -right-24 -top-24 h-64 w-64 rounded-full border border-[#d5a94b]/20" />
 
-          {error && (
-            <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-              {error}
+            <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full border border-[#d5a94b]/20" />
+
+            <div className="relative">
+
+              <div className="mb-10 flex h-16 w-16 animate-[float_5s_ease-in-out_infinite] items-center justify-center rounded-full bg-[#d5a94b]/10 text-3xl text-[#d5a94b]">
+                ✦
+              </div>
+
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#d5a94b]">
+                Solar Calculator
+              </p>
+
+              <h1 className="mt-4 text-4xl font-semibold leading-tight sm:text-5xl">
+                Discover your
+                <span className="block text-[#d5a94b]">
+                  solar potential.
+                </span>
+              </h1>
+
+              <p className="mt-6 text-sm leading-7 text-white/55">
+                Tell us about your property and electricity
+                consumption. We'll calculate an estimated
+                solar system designed around your needs.
+              </p>
+
+              {/* Mini benefits */}
+              <div className="mt-10 space-y-5">
+
+                <Benefit
+                  number="01"
+                  title="Personalised"
+                  text="Based on your electricity usage"
+                />
+
+                <Benefit
+                  number="02"
+                  title="Transparent"
+                  text="See subsidy and estimated cost"
+                />
+
+                <Benefit
+                  number="03"
+                  title="Simple"
+                  text="Get your estimate in minutes"
+                />
+
+              </div>
+
+              <div className="mt-10 border-t border-white/10 pt-6">
+
+                <p className="text-xs leading-6 text-white/35">
+                  Your information is used only to prepare
+                  your solar assessment and help our team
+                  contact you.
+                </p>
+
+              </div>
+
             </div>
-          )}
+          </aside>
 
-          {/* ===================================================
-              STEP 1 — INSTALLATION TYPE
-          ==================================================== */}
+          {/* Right form */}
+          <section className="rounded-[2rem] border border-[#17201b]/10 bg-white/85 p-6 shadow-xl shadow-[#17201b]/5 backdrop-blur-xl sm:p-9">
 
-          {step === 1 && (
-            <>
-              <div className="text-center">
+            {/* Progress */}
+            <div className="mb-10">
 
-                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#b98224]">
-                  Adhiraj Urja Solar
-                </p>
+              <div className="flex items-center justify-between">
 
-                <h1 className="mt-3 text-3xl font-semibold tracking-tight text-[#17201b] sm:text-4xl">
-                  What type of installation do you need?
-                </h1>
+                {steps.map((item, index) => {
+                  const active = step >= item.number;
 
-                <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[#68716b] sm:text-base">
-                  Choose the option that best describes your
-                  solar requirement.
-                </p>
+                  return (
+                    <div
+                      key={item.number}
+                      className="flex flex-1 items-center"
+                    >
+
+                      <div className="flex flex-col items-center">
+
+                        <div
+                          className={`flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold transition-all duration-500 ${
+                            active
+                              ? "bg-[#17201b] text-[#d5a94b] shadow-lg"
+                              : "bg-[#17201b]/5 text-[#17201b]/30"
+                          }`}
+                        >
+                          {item.number}
+                        </div>
+
+                        <span
+                          className={`mt-2 hidden text-[10px] font-semibold uppercase tracking-wider sm:block ${
+                            active
+                              ? "text-[#17201b]"
+                              : "text-[#17201b]/30"
+                          }`}
+                        >
+                          {item.label}
+                        </span>
+
+                      </div>
+
+                      {index < steps.length - 1 && (
+                        <div className="mx-3 mt-[-18px] h-px flex-1 bg-[#17201b]/10">
+
+                          <div
+                            className="h-full bg-[#c6922e] transition-all duration-700"
+                            style={{
+                              width:
+                                step > item.number
+                                  ? "100%"
+                                  : "0%",
+                            }}
+                          />
+
+                        </div>
+                      )}
+
+                    </div>
+                  );
+                })}
 
               </div>
+            </div>
 
-              <div className="mt-10 grid gap-5 sm:grid-cols-2">
+            {/* Step content */}
+            <div className="min-h-[460px]">
 
-                {/* Residential */}
+              {/* STEP 1 */}
+              {step === 1 && (
+                <div className="animate-[fadeUp_0.5s_ease-out]">
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCustomerType("residential");
-                    setError("");
-                  }}
-                  className={`group rounded-[24px] border p-6 text-left transition-all duration-300 ${
-                    customerType === "residential"
-                      ? "border-[#c6922e] bg-[#c6922e]/10 shadow-[0_12px_30px_rgba(198,146,46,0.10)]"
-                      : "border-[#17201b]/10 bg-[#faf9f5] hover:-translate-y-1 hover:border-[#c6922e]/40 hover:shadow-[0_12px_30px_rgba(23,32,27,0.07)]"
-                  }`}
-                >
+                  <StepHeading
+                    eyebrow="Step 01"
+                    title="What are you powering?"
+                    description="Choose the type of property where you plan to install solar."
+                  />
 
-                  <div className="flex items-start justify-between">
+                  <div className="mt-10 grid gap-4 sm:grid-cols-2">
 
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#61745f]/10 text-2xl">
-                      🏠
-                    </div>
+                    <SelectionCard
+                      selected={
+                        customerType === "residential"
+                      }
+                      onClick={() =>
+                        setCustomerType("residential")
+                      }
+                      icon="⌂"
+                      title="Residential"
+                      description="Home, bungalow or apartment"
+                    />
 
-                    {customerType === "residential" && (
-                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#c6922e] text-sm font-bold text-[#17201b]">
-                        ✓
-                      </span>
-                    )}
+                    <SelectionCard
+                      selected={
+                        customerType === "commercial"
+                      }
+                      onClick={() =>
+                        setCustomerType("commercial")
+                      }
+                      icon="▦"
+                      title="Commercial"
+                      description="Office, shop or business"
+                    />
 
                   </div>
 
-                  <h2 className="mt-6 text-xl font-semibold text-[#17201b]">
-                    Residential
-                  </h2>
-
-                  <p className="mt-2 text-sm leading-6 text-[#68716b]">
-                    Solar for homes, villas, apartments and
-                    individual residences.
-                  </p>
-
-                  <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-[#61745f]">
-                    Ideal for homeowners
-                  </p>
-
-                </button>
-
-                {/* Commercial */}
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCustomerType("commercial");
-                    setError("");
-                  }}
-                  className={`group rounded-[24px] border p-6 text-left transition-all duration-300 ${
-                    customerType === "commercial"
-                      ? "border-[#c6922e] bg-[#c6922e]/10 shadow-[0_12px_30px_rgba(198,146,46,0.10)]"
-                      : "border-[#17201b]/10 bg-[#faf9f5] hover:-translate-y-1 hover:border-[#c6922e]/40 hover:shadow-[0_12px_30px_rgba(23,32,27,0.07)]"
-                  }`}
-                >
-
-                  <div className="flex items-start justify-between">
-
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#61745f]/10 text-2xl">
-                      🏢
-                    </div>
-
-                    {customerType === "commercial" && (
-                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#c6922e] text-sm font-bold text-[#17201b]">
-                        ✓
-                      </span>
-                    )}
-
-                  </div>
-
-                  <h2 className="mt-6 text-xl font-semibold text-[#17201b]">
-                    Commercial
-                  </h2>
-
-                  <p className="mt-2 text-sm leading-6 text-[#68716b]">
-                    Solar for shops, offices, factories,
-                    warehouses and businesses.
-                  </p>
-
-                  <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-[#61745f]">
-                    Ideal for businesses
-                  </p>
-
-                </button>
-
-              </div>
-
-              <button
-                type="button"
-                onClick={handleContinue}
-                className="mt-8 w-full rounded-full bg-[#17201b] px-6 py-4 text-sm font-bold text-[#faf9f5] shadow-[0_12px_30px_rgba(23,32,27,0.15)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#243329]"
-              >
-                Continue →
-              </button>
-            </>
-          )}
-
-          {/* ===================================================
-              STEP 2 — YOUR DETAILS
-          ==================================================== */}
-
-          {step === 2 && (
-            <>
-              <div>
-
-                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#b98224]">
-                  {customerType === "commercial"
-                    ? "Commercial Solar"
-                    : "Residential Solar"}
-                </p>
-
-                <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[#17201b]">
-                  Tell us about yourself
-                </h1>
-
-                <p className="mt-3 text-[#68716b]">
-                  We'll use these details to prepare your
-                  solar quotation.
-                </p>
-
-              </div>
-
-              <div className="mt-8 space-y-6">
-
-                {/* Name */}
-
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="text-sm font-semibold text-[#29342d]"
-                  >
-                    {customerType === "commercial"
-                      ? "Contact Person *"
-                      : "Full Name *"}
-                  </label>
-
-                  <input
-                    id="name"
-                    type="text"
-                    value={name}
-                    onChange={(event) =>
-                      setName(event.target.value)
-                    }
-                    placeholder={
-                      customerType === "commercial"
-                        ? "Enter contact person's name"
-                        : "Enter your name"
-                    }
-                    className="mt-2 w-full rounded-xl border border-[#17201b]/15 bg-[#faf9f5] px-4 py-3.5 text-[#17201b] outline-none transition focus:border-[#c6922e] focus:ring-2 focus:ring-[#c6922e]/10"
-                  />
                 </div>
+              )}
 
-                {/* Phone */}
+              {/* STEP 2 */}
+              {step === 2 && (
+                <div className="animate-[fadeUp_0.5s_ease-out]">
 
-                <div>
-                  <label
-                    htmlFor="phone"
-                    className="text-sm font-semibold text-[#29342d]"
-                  >
-                    Phone Number *
-                  </label>
-
-                  <input
-                    id="phone"
-                    type="tel"
-                    inputMode="numeric"
-                    value={phone}
-                    onChange={(event) =>
-                      setPhone(
-                        event.target.value.replace(/\D/g, "")
-                      )
-                    }
-                    placeholder="10-digit mobile number"
-                    maxLength={10}
-                    className="mt-2 w-full rounded-xl border border-[#17201b]/15 bg-[#faf9f5] px-4 py-3.5 text-[#17201b] outline-none transition focus:border-[#c6922e] focus:ring-2 focus:ring-[#c6922e]/10"
-                  />
-                </div>
-
-                {/* PIN Code */}
-
-                <div>
-                  <label
-                    htmlFor="pin-code"
-                    className="text-sm font-semibold text-[#29342d]"
-                  >
-                    PIN Code *
-                  </label>
-
-                  <input
-                    id="pin-code"
-                    type="text"
-                    inputMode="numeric"
-                    value={pinCode}
-                    onChange={(event) =>
-                      setPinCode(
-                        event.target.value
-                          .replace(/\D/g, "")
-                          .slice(0, 6)
-                      )
-                    }
-                    placeholder="6-digit PIN code"
-                    maxLength={6}
-                    className="mt-2 w-full rounded-xl border border-[#17201b]/15 bg-[#faf9f5] px-4 py-3.5 text-[#17201b] outline-none transition focus:border-[#c6922e] focus:ring-2 focus:ring-[#c6922e]/10"
+                  <StepHeading
+                    eyebrow="Step 02"
+                    title="Tell us about yourself"
+                    description="We'll use these details to prepare your solar assessment."
                   />
 
-                  <p className="mt-2 text-xs text-[#8a918b]">
-                    This helps us understand your installation location.
-                  </p>
-                </div>
+                  <div className="mt-10 space-y-5">
 
-                {/* Buttons */}
+                    <PremiumInput
+                      label="Full name"
+                      placeholder="Enter your name"
+                      value={name}
+                      onChange={setName}
+                    />
 
-                <div className="flex gap-3 pt-2">
-
-                  <button
-                    type="button"
-                    onClick={handleBack}
-                    className="w-1/3 rounded-full border border-[#17201b]/15 px-6 py-3.5 font-semibold text-[#435047] transition hover:bg-[#17201b]/5"
-                  >
-                    ← Back
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleContinue}
-                    className="w-2/3 rounded-full bg-[#17201b] px-6 py-3.5 font-semibold text-[#faf9f5] shadow-sm transition hover:bg-[#243329]"
-                  >
-                    Continue →
-                  </button>
-
-                </div>
-
-              </div>
-            </>
-          )}
-
-          {/* ===================================================
-              STEP 3 — ELECTRICITY
-          ==================================================== */}
-
-          {step === 3 && (
-            <>
-              <div>
-
-                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#b98224]">
-                  Electricity Usage
-                </p>
-
-                <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[#17201b]">
-                  Your Electricity Usage
-                </h1>
-
-                <p className="mt-3 text-[#68716b]">
-                  Enter your monthly bill or electricity units.
-                  We'll calculate the other automatically.
-                </p>
-
-              </div>
-
-              <div className="mt-8 space-y-6">
-
-                {/* Monthly Bill */}
-
-                <div>
-                  <label
-                    htmlFor="monthly-bill"
-                    className="text-sm font-semibold text-[#29342d]"
-                  >
-                    Monthly Electricity Bill
-                  </label>
-
-                  <div className="relative mt-2">
-
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#68716b]">
-                      ₹
-                    </span>
-
-                    <input
-                      id="monthly-bill"
-                      type="text"
+                    <PremiumInput
+                      label="Mobile number"
+                      placeholder="10-digit mobile number"
+                      value={phone}
+                      onChange={(value) =>
+                        setPhone(
+                          value.replace(/\D/g, "").slice(0, 10)
+                        )
+                      }
+                      prefix="+91"
                       inputMode="numeric"
+                    />
+
+                    <PremiumInput
+                      label="PIN code"
+                      placeholder="6-digit PIN code"
+                      value={pinCode}
+                      onChange={(value) =>
+                        setPinCode(
+                          value.replace(/\D/g, "").slice(0, 6)
+                        )
+                      }
+                      inputMode="numeric"
+                    />
+
+                  </div>
+
+                </div>
+              )}
+
+              {/* STEP 3 */}
+              {step === 3 && (
+                <div className="animate-[fadeUp_0.5s_ease-out]">
+
+                  <StepHeading
+                    eyebrow="Step 03"
+                    title="How much electricity do you use?"
+                    description="Enter either your monthly bill or monthly units."
+                  />
+
+                  <div className="mt-10 grid gap-5 sm:grid-cols-2">
+
+                    <EnergyInput
+                      label="Monthly electricity bill"
+                      prefix="₹"
                       value={monthlyBill}
-                      onChange={(event) =>
-                        handleBillChange(
-                          event.target.value
-                        )
-                      }
-                      placeholder="Example: 5000"
-                      className="w-full rounded-xl border border-[#17201b]/15 bg-[#faf9f5] py-3.5 pl-9 pr-4 text-[#17201b] outline-none transition focus:border-[#c6922e] focus:ring-2 focus:ring-[#c6922e]/10"
+                      onChange={handleBillChange}
+                      suffix="/ month"
                     />
 
-                  </div>
-
-                  {monthlyBill && (
-                    <p className="mt-2 text-xs text-[#61745f]">
-                      ≈ {Number(monthlyUnits).toLocaleString("en-IN")} units/month
-                    </p>
-                  )}
-                </div>
-
-                {/* OR */}
-
-                <div className="flex items-center gap-4">
-
-                  <div className="h-px flex-1 bg-[#17201b]/10" />
-
-                  <span className="text-xs font-semibold text-[#8a918b]">
-                    OR
-                  </span>
-
-                  <div className="h-px flex-1 bg-[#17201b]/10" />
-
-                </div>
-
-                {/* Monthly Units */}
-
-                <div>
-                  <label
-                    htmlFor="monthly-units"
-                    className="text-sm font-semibold text-[#29342d]"
-                  >
-                    Monthly Electricity Units
-                  </label>
-
-                  <div className="relative mt-2">
-
-                    <input
-                      id="monthly-units"
-                      type="text"
-                      inputMode="numeric"
+                    <EnergyInput
+                      label="Monthly electricity units"
                       value={monthlyUnits}
-                      onChange={(event) =>
-                        handleUnitsChange(
-                          event.target.value
-                        )
-                      }
-                      placeholder="Example: 400"
-                      className="w-full rounded-xl border border-[#17201b]/15 bg-[#faf9f5] px-4 py-3.5 pr-20 text-[#17201b] outline-none transition focus:border-[#c6922e] focus:ring-2 focus:ring-[#c6922e]/10"
+                      onChange={handleUnitsChange}
+                      suffix="units"
                     />
-
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[#8a918b]">
-                      units
-                    </span>
 
                   </div>
 
-                  {monthlyUnits && (
-                    <p className="mt-2 text-xs text-[#61745f]">
-                      ≈ ₹{Number(monthlyBill).toLocaleString("en-IN")}/month
-                    </p>
-                  )}
+                  {/* Simple reassurance */}
+                  <div className="mt-6 rounded-2xl border border-[#c6922e]/20 bg-[#c6922e]/5 p-5">
+
+                    <div className="flex gap-3">
+
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#c6922e]/10 text-[#c6922e]">
+                        ✓
+                      </div>
+
+                      <div>
+
+                        <p className="text-sm font-semibold">
+                          Enter whichever figure you know
+                        </p>
+
+                        <p className="mt-1 text-xs leading-5 text-[#17201b]/50">
+                          Your electricity details will be used
+                          to prepare your solar assessment.
+                        </p>
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
                 </div>
+              )}
 
-                {/* Solar System Type */}
+              {/* STEP 4 */}
+              {step === 4 && (
+                <div className="animate-[fadeUp_0.5s_ease-out]">
 
-                <div>
+                  <StepHeading
+                    eyebrow="Step 04"
+                    title="Choose your solar system"
+                    description="Select the system type you'd like us to estimate."
+                  />
 
-                  <p className="text-sm font-semibold text-[#29342d]">
-                    Solar System Type
-                  </p>
+                  <div className="mt-10 space-y-4">
 
-                  <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
-
-                    {/* On Grid */}
-
-                    <button
-                      type="button"
+                    <SystemCard
+                      selected={
+                        systemType === "on_grid"
+                      }
                       onClick={() =>
                         setSystemType("on_grid")
                       }
-                      className={`rounded-2xl border p-5 text-left transition-all duration-300 ${
-                        systemType === "on_grid"
-                          ? "border-[#c6922e] bg-[#c6922e]/10 shadow-sm"
-                          : "border-[#17201b]/10 bg-[#faf9f5] hover:border-[#17201b]/20"
-                      }`}
-                    >
+                      title="On-Grid Solar"
+                      subtitle="Best for homes connected to the electricity grid"
+                      icon="☀"
+                      badge={
+                        customerType === "residential"
+                          ? "Subsidy eligible"
+                          : undefined
+                      }
+                    />
 
-                      <div className="flex items-center justify-between">
-
-                        <p className="font-semibold text-[#17201b]">
-                          On-Grid
-                        </p>
-
-                        {systemType === "on_grid" && (
-                          <span className="text-[#b98224]">
-                            ✓
-                          </span>
-                        )}
-
-                      </div>
-
-                      <p className="mt-2 text-sm text-[#68716b]">
-                        Connected to the electricity grid.
-                      </p>
-
-                      <p className="mt-2 text-xs font-medium text-[#61745f]">
-                        {customerType === "residential"
-                          ? "Government subsidy may be available*"
-                          : "Suitable for grid-connected businesses"}
-                      </p>
-
-                    </button>
-
-                    {/* Off Grid */}
-
-                    <button
-                      type="button"
+                    <SystemCard
+                      selected={
+                        systemType === "off_grid"
+                      }
                       onClick={() =>
                         setSystemType("off_grid")
                       }
-                      className={`rounded-2xl border p-5 text-left transition-all duration-300 ${
-                        systemType === "off_grid"
-                          ? "border-[#c6922e] bg-[#c6922e]/10 shadow-sm"
-                          : "border-[#17201b]/10 bg-[#faf9f5] hover:border-[#17201b]/20"
-                      }`}
-                    >
+                      title="Off-Grid Solar"
+                      subtitle="Independent solar system with battery backup"
+                      icon="◐"
+                    />
 
-                      <div className="flex items-center justify-between">
+                  </div>
 
-                        <p className="font-semibold text-[#17201b]">
-                          Off-Grid
-                        </p>
+                  <div className="mt-6 rounded-2xl bg-[#17201b]/5 p-5">
 
-                        {systemType === "off_grid" && (
-                          <span className="text-[#b98224]">
-                            ✓
-                          </span>
-                        )}
+                    <p className="text-xs font-semibold uppercase tracking-wider text-[#61745f]">
+                      Your assessment
+                    </p>
 
-                      </div>
+                    <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
 
-                      <p className="mt-2 text-sm text-[#68716b]">
-                        Independent solar power system.
-                      </p>
+                      <MiniStat
+                        label="Property"
+                        value={
+                          customerType === "residential"
+                            ? "Residential"
+                            : "Commercial"
+                        }
+                      />
 
-                      <p className="mt-2 text-xs font-medium text-[#68716b]">
-                        Battery-based independent system
-                      </p>
+                      <MiniStat
+                        label="Usage"
+                        value={`${monthlyUnits || "0"} units`}
+                      />
 
-                    </button>
+                      <MiniStat
+                        label="System"
+                        value={
+                          systemType === "on_grid"
+                            ? "On-Grid"
+                            : "Off-Grid"
+                        }
+                      />
+
+                    </div>
 
                   </div>
 
                 </div>
+              )}
 
-                {/* Buttons */}
+            </div>
 
-                <div className="flex gap-3 pt-2">
-
-                  <button
-                    type="button"
-                    onClick={handleBack}
-                    className="w-1/3 rounded-full border border-[#17201b]/15 px-6 py-3.5 font-semibold text-[#435047] transition hover:bg-[#17201b]/5"
-                  >
-                    ← Back
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleContinue}
-                    disabled={isSaving}
-                    className="w-2/3 rounded-full bg-[#17201b] px-6 py-3.5 font-semibold text-[#faf9f5] shadow-[0_10px_25px_rgba(23,32,27,0.12)] transition hover:bg-[#243329] disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {isSaving
-                      ? "Preparing Your Quotation..."
-                      : "Calculate →"}
-                  </button>
-
-                </div>
-
+            {/* Error */}
+            {error && (
+              <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+                {error}
               </div>
-            </>
-          )}
+            )}
 
-          {/* ===================================================
-              STEP 4 — QUOTATION
-          ==================================================== */}
+            {/* Navigation */}
+            <div className="flex items-center justify-between border-t border-[#17201b]/10 pt-6">
 
-          {step === 4 && quotation && (
-            <>
-              <div className="text-center">
-
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#c6922e]/15 text-2xl">
-                  ☀
-                </div>
-
-                <p className="mt-5 text-[11px] font-bold uppercase tracking-[0.18em] text-[#b98224]">
-                  {quotation.customerType === "commercial"
-                    ? "Commercial Solar"
-                    : "Residential Solar"}
-                </p>
-
-                <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[#17201b] sm:text-4xl">
-                  Your Solar Quotation
-                </h1>
-
-                <p className="mt-3 text-[#68716b]">
-                  Here is an estimated solar system based
-                  on the information you provided.
-                </p>
-
-              </div>
-
-              <div className="mt-8 rounded-[24px] bg-[#17201b] p-7 text-center text-[#faf9f5] shadow-[0_20px_50px_rgba(23,32,27,0.15)]">
-
-                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-white/50">
-                  Recommended System
-                </p>
-
-                <p className="mt-2 text-5xl font-semibold tracking-tight text-[#d6ae62]">
-                  {quotation.recommendedSystem} kW
-                </p>
-
-                <p className="mt-2 text-sm text-white/60">
-                  {quotation.systemType === "on_grid"
-                    ? "On-Grid Solar System"
-                    : "Off-Grid Solar System"}
-                </p>
-
-              </div>
-
-              <div className="mt-6 divide-y divide-[#17201b]/10 overflow-hidden rounded-2xl border border-[#17201b]/10">
-
-                <div className="flex items-center justify-between px-5 py-4">
-                  <span className="text-sm text-[#68716b]">
-                    Estimated Annual Generation
-                  </span>
-
-                  <span className="text-sm font-semibold text-[#17201b]">
-                    {quotation.estimatedGeneration.toLocaleString(
-                      "en-IN"
-                    )}{" "}
-                    kWh
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between px-5 py-4">
-                  <span className="text-sm text-[#68716b]">
-                    Estimated Annual Savings
-                  </span>
-
-                  <span className="text-sm font-semibold text-[#61745f]">
-                    {formatCurrency(
-                      quotation.estimatedSavings
-                    )}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between px-5 py-4">
-                  <span className="text-sm text-[#68716b]">
-                    Estimated System Cost
-                  </span>
-
-                  <span className="text-sm font-semibold text-[#17201b]">
-                    {formatCurrency(
-                      quotation.estimatedCost +
-                        quotation.subsidy
-                    )}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between px-5 py-4">
-                  <span className="text-sm text-[#68716b]">
-                    Government Subsidy
-                  </span>
-
-                  <span className="text-sm font-semibold text-[#61745f]">
-                    {quotation.subsidy > 0
-                      ? formatCurrency(
-                          quotation.subsidy
-                        )
-                      : "Not applicable"}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between bg-[#f3f0e8] px-5 py-5">
-
-                  <span className="text-sm font-semibold text-[#17201b]">
-                    Estimated Cost After Subsidy
-                  </span>
-
-                  <span className="text-xl font-bold text-[#b98224]">
-                    {formatCurrency(
-                      quotation.estimatedCost
-                    )}
-                  </span>
-
-                </div>
-
-                <div className="flex items-center justify-between px-5 py-4">
-
-                  <span className="text-sm text-[#68716b]">
-                    Estimated Payback
-                  </span>
-
-                  <span className="text-sm font-semibold text-[#17201b]">
-                    {quotation.estimatedCost > 0 &&
-                    quotation.estimatedSavings > 0
-                      ? (
-                          quotation.estimatedCost /
-                          quotation.estimatedSavings
-                        ).toFixed(1)
-                      : "—"}{" "}
-                    years
-                  </span>
-
-                </div>
-
-              </div>
-
-              <div className="mt-6 rounded-2xl border border-[#17201b]/10 bg-[#f3f0e8] p-4 text-sm leading-6 text-[#68716b]">
-                This is an estimated calculation based on
-                average electricity usage and solar generation.
-                The final system size, price and subsidy
-                eligibility will be confirmed after a site
-                assessment.
-              </div>
-
-              <div className="mt-8 space-y-3">
-
+              {step > 1 ? (
                 <button
-                  type="button"
-                  onClick={handleBack}
-                  className="w-full rounded-full border border-[#17201b]/15 px-6 py-3.5 font-semibold text-[#435047] transition hover:bg-[#17201b]/5"
+                  onClick={previousStep}
+                  disabled={isSaving}
+                  className="rounded-xl px-4 py-3 text-sm font-semibold text-[#17201b]/50 transition hover:bg-[#17201b]/5 hover:text-[#17201b] disabled:opacity-40"
                 >
-                  ← Change Details
+                  ← Back
                 </button>
+              ) : (
+                <div />
+              )}
 
-                <Link
-                  href="/"
-                  className="flex w-full items-center justify-center rounded-full bg-[#17201b] px-6 py-3.5 font-semibold text-[#faf9f5] shadow-[0_10px_25px_rgba(23,32,27,0.12)] transition hover:-translate-y-0.5 hover:bg-[#243329]"
+              {step < 4 ? (
+                <button
+                  onClick={nextStep}
+                  className="group rounded-xl bg-[#17201b] px-7 py-3.5 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#243229] hover:shadow-xl"
                 >
-                  Go to Home
-                </Link>
+                  Continue
 
-              </div>
+                  <span className="ml-2 transition-transform duration-300 group-hover:translate-x-1">
+                    →
+                  </span>
 
-            </>
+                </button>
+              ) : (
+                <button
+                  onClick={calculateQuotation}
+                  disabled={isSaving}
+                  className="group flex items-center gap-3 rounded-xl bg-[#17201b] px-7 py-3.5 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#243229] hover:shadow-xl disabled:cursor-wait disabled:opacity-70"
+                >
+
+                  {isSaving ? (
+                    <>
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                      Calculating...
+                    </>
+                  ) : (
+                    <>
+                      Calculate my solar estimate
+
+                      <span className="transition-transform duration-300 group-hover:translate-x-1">
+                        →
+                      </span>
+                    </>
+                  )}
+
+                </button>
+              )}
+
+            </div>
+
+          </section>
+        </div>
+      </div>
+
+      {/* Animation keyframes */}
+      <style jsx global>{`
+        @keyframes fadeUp {
+          from {
+            opacity: 0;
+            transform: translateY(16px);
+          }
+
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes float {
+          0%,
+          100% {
+            transform: translateY(0);
+          }
+
+          50% {
+            transform: translateY(-7px);
+          }
+        }
+      `}</style>
+    </main>
+  );
+}
+
+/* ---------------------------------------------------------
+   COMPONENTS
+--------------------------------------------------------- */
+
+function StepHeading({
+  eyebrow,
+  title,
+  description,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div>
+
+      <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#c6922e]">
+        {eyebrow}
+      </p>
+
+      <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
+        {title}
+      </h2>
+
+      <p className="mt-3 max-w-xl text-sm leading-6 text-[#17201b]/50">
+        {description}
+      </p>
+
+    </div>
+  );
+}
+
+function SelectionCard({
+  selected,
+  onClick,
+  icon,
+  title,
+  description,
+}: {
+  selected: boolean;
+  onClick: () => void;
+  icon: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`group relative overflow-hidden rounded-3xl border p-6 text-left transition-all duration-300 ${
+        selected
+          ? "border-[#17201b] bg-[#17201b] text-white shadow-xl"
+          : "border-[#17201b]/10 bg-[#faf9f5] hover:-translate-y-1 hover:border-[#c6922e]/40 hover:shadow-lg"
+      }`}
+    >
+
+      {selected && (
+        <div className="absolute right-5 top-5 flex h-6 w-6 items-center justify-center rounded-full bg-[#d5a94b] text-xs font-bold text-[#17201b]">
+          ✓
+        </div>
+      )}
+
+      <div
+        className={`flex h-14 w-14 items-center justify-center rounded-2xl text-2xl transition-transform duration-300 group-hover:scale-110 ${
+          selected
+            ? "bg-[#d5a94b]/10 text-[#d5a94b]"
+            : "bg-[#17201b]/5 text-[#17201b]"
+        }`}
+      >
+        {icon}
+      </div>
+
+      <h3 className="mt-6 text-xl font-semibold">
+        {title}
+      </h3>
+
+      <p
+        className={`mt-2 text-sm leading-6 ${
+          selected
+            ? "text-white/50"
+            : "text-[#17201b]/45"
+        }`}
+      >
+        {description}
+      </p>
+
+    </button>
+  );
+}
+
+function PremiumInput({
+  label,
+  placeholder,
+  value,
+  onChange,
+  prefix,
+  inputMode,
+}: {
+  label: string;
+  placeholder: string;
+  value: string;
+  onChange: (value: string) => void;
+  prefix?: string;
+  inputMode?: "text" | "numeric" | "tel";
+}) {
+  return (
+    <label className="block">
+
+      <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-[#17201b]/50">
+        {label}
+      </span>
+
+      <div className="flex overflow-hidden rounded-2xl border border-[#17201b]/10 bg-[#faf9f5] transition-all duration-300 focus-within:border-[#c6922e]/60 focus-within:bg-white focus-within:shadow-[0_0_0_4px_rgba(198,146,46,0.08)]">
+
+        {prefix && (
+          <div className="flex items-center border-r border-[#17201b]/10 px-4 text-sm font-semibold text-[#17201b]/40">
+            {prefix}
+          </div>
+        )}
+
+        <input
+          value={value}
+          onChange={(event) =>
+            onChange(event.target.value)
+          }
+          placeholder={placeholder}
+          inputMode={inputMode}
+          className="w-full bg-transparent px-4 py-4 text-sm font-medium outline-none placeholder:text-[#17201b]/25"
+        />
+
+      </div>
+    </label>
+  );
+}
+
+function EnergyInput({
+  label,
+  prefix,
+  suffix,
+  value,
+  onChange,
+}: {
+  label: string;
+  prefix?: string;
+  suffix: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="block rounded-3xl border border-[#17201b]/10 bg-[#faf9f5] p-5 transition-all duration-300 focus-within:border-[#c6922e]/50 focus-within:bg-white focus-within:shadow-lg">
+
+      <span className="text-xs font-bold uppercase tracking-wider text-[#17201b]/45">
+        {label}
+      </span>
+
+      <div className="mt-5 flex items-center">
+
+        {prefix && (
+          <span className="mr-2 text-2xl font-semibold text-[#c6922e]">
+            {prefix}
+          </span>
+        )}
+
+        <input
+          type="text"
+          inputMode="numeric"
+          value={value}
+          onChange={(event) =>
+            onChange(event.target.value)
+          }
+          placeholder="0"
+          className="min-w-0 flex-1 bg-transparent text-4xl font-semibold tracking-tight outline-none placeholder:text-[#17201b]/10"
+        />
+
+        <span className="ml-2 text-xs font-semibold text-[#17201b]/35">
+          {suffix}
+        </span>
+
+      </div>
+
+      <div className="mt-4 h-1 overflow-hidden rounded-full bg-[#17201b]/5">
+        <div className="h-full w-1/3 rounded-full bg-[#c6922e] transition-all duration-500" />
+      </div>
+
+    </label>
+  );
+}
+
+function SystemCard({
+  selected,
+  onClick,
+  title,
+  subtitle,
+  icon,
+  badge,
+}: {
+  selected: boolean;
+  onClick: () => void;
+  title: string;
+  subtitle: string;
+  icon: string;
+  badge?: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`group relative flex w-full items-center gap-5 rounded-3xl border p-5 text-left transition-all duration-300 ${
+        selected
+          ? "border-[#17201b] bg-[#17201b] text-white shadow-xl"
+          : "border-[#17201b]/10 bg-[#faf9f5] hover:-translate-y-1 hover:border-[#c6922e]/40 hover:shadow-lg"
+      }`}
+    >
+
+      <div
+        className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-2xl transition-transform duration-300 group-hover:scale-110 ${
+          selected
+            ? "bg-[#d5a94b]/10 text-[#d5a94b]"
+            : "bg-[#17201b]/5 text-[#17201b]"
+        }`}
+      >
+        {icon}
+      </div>
+
+      <div className="min-w-0 flex-1">
+
+        <div className="flex flex-wrap items-center gap-2">
+
+          <h3 className="font-semibold">
+            {title}
+          </h3>
+
+          {badge && (
+            <span
+              className={`rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider ${
+                selected
+                  ? "bg-[#d5a94b]/10 text-[#d5a94b]"
+                  : "bg-[#61745f]/10 text-[#61745f]"
+              }`}
+            >
+              {badge}
+            </span>
           )}
 
         </div>
+
+        <p
+          className={`mt-1 text-xs leading-5 ${
+            selected
+              ? "text-white/45"
+              : "text-[#17201b]/40"
+          }`}
+        >
+          {subtitle}
+        </p>
+
       </div>
-    </main>
+
+      <div
+        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition-all duration-300 ${
+          selected
+            ? "border-[#d5a94b] bg-[#d5a94b] text-[#17201b]"
+            : "border-[#17201b]/15"
+        }`}
+      >
+        {selected && (
+          <span className="text-xs font-bold">
+            ✓
+          </span>
+        )}
+      </div>
+
+    </button>
+  );
+}
+
+function Benefit({
+  number,
+  title,
+  text,
+}: {
+  number: string;
+  title: string;
+  text: string;
+}) {
+  return (
+    <div className="flex gap-4">
+
+      <span className="text-xs font-semibold text-[#d5a94b]/60">
+        {number}
+      </span>
+
+      <div>
+
+        <p className="text-sm font-semibold">
+          {title}
+        </p>
+
+        <p className="mt-1 text-xs text-white/35">
+          {text}
+        </p>
+
+      </div>
+
+    </div>
+  );
+}
+
+function MiniStat({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div>
+
+      <p className="text-[10px] font-bold uppercase tracking-wider text-[#17201b]/35">
+        {label}
+      </p>
+
+      <p className="mt-1 text-sm font-semibold">
+        {value}
+      </p>
+
+    </div>
+  );
+}
+
+function MetricCard({
+  label,
+  value,
+  suffix,
+  delay,
+}: {
+  label: string;
+  value: string;
+  suffix: string;
+  delay: string;
+}) {
+  return (
+    <div
+      style={{
+        animationDelay: delay,
+      }}
+      className="animate-[fadeUp_0.6s_ease-out_both] rounded-3xl border border-[#17201b]/10 bg-white/80 p-6 shadow-lg shadow-[#17201b]/5 backdrop-blur"
+    >
+
+      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#61745f]">
+        {label}
+      </p>
+
+      <div className="mt-4 flex items-baseline gap-2">
+
+        <span className="text-2xl font-semibold">
+          {value}
+        </span>
+
+        {suffix && (
+          <span className="text-xs font-medium text-[#17201b]/35">
+            {suffix}
+          </span>
+        )}
+
+      </div>
+
+    </div>
+  );
+}
+
+function PriceRow({
+  label,
+  value,
+  positive,
+}: {
+  label: string;
+  value: string;
+  positive?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between">
+
+      <span className="text-sm text-[#17201b]/55">
+        {label}
+      </span>
+
+      <span
+        className={`text-sm font-semibold ${
+          positive ? "text-[#61745f]" : ""
+        }`}
+      >
+        {value}
+      </span>
+
+    </div>
   );
 }
