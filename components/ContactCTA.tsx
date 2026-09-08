@@ -12,8 +12,10 @@ export default function ContactCTA() {
       {/* Glow */}
       <div className="pointer-events-none absolute -right-40 -top-40 h-96 w-96 rounded-full bg-green-500/10 blur-3xl" />
 
+      {/* Technical Grid */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.045]"
+        aria-hidden="true"
         style={{
           backgroundImage:
             "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
@@ -28,6 +30,7 @@ export default function ContactCTA() {
         transition={{ duration: 0.8 }}
         className="relative mx-auto max-w-5xl text-center"
       >
+        {/* Label */}
         <div className="mx-auto flex w-fit items-center gap-3">
           <span className="h-px w-7 bg-green-400" />
 
@@ -38,41 +41,53 @@ export default function ContactCTA() {
           <span className="h-px w-7 bg-green-400" />
         </div>
 
+        {/* Heading */}
         <h2 className="mt-6 text-4xl font-semibold tracking-[-0.03em] text-white md:text-5xl lg:text-6xl">
-          Let's find the right
+          Let&apos;s find the right
           <br />
           <span className="text-white/40">
             solar system for you.
           </span>
         </h2>
 
+        {/* Description */}
         <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-white/55">
           Get a quick estimate based on your electricity usage, or talk
           directly with our team about your requirements.
         </p>
 
+        {/* Actions */}
         <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
+          {/* Quotation */}
           <Link
             href="/quotation"
             className="group rounded-full bg-white px-8 py-4 text-sm font-semibold text-[#172018] transition-all duration-300 hover:bg-green-100"
           >
             Get Your Quotation
+
             <span className="ml-2 inline-block transition-transform duration-300 group-hover:translate-x-1">
               →
             </span>
           </Link>
 
+          {/* Call */}
           <a
             href="tel:7507564542"
             className="rounded-full border border-white/15 px-8 py-4 text-sm font-semibold text-white transition-all duration-300 hover:border-white/30 hover:bg-white/5"
           >
             Call 7507564542
           </a>
-        </div>
 
-        <p className="mt-6 text-sm text-white/35">
-          WhatsApp: 9766614955
-        </p>
+          {/* WhatsApp */}
+          <a
+            href="https://wa.me/919766614955"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-full border border-white/15 px-8 py-4 text-sm font-semibold text-white transition-all duration-300 hover:border-white/30 hover:bg-white/5"
+          >
+            WhatsApp 9766614955
+          </a>
+        </div>
       </motion.div>
     </section>
   );
