@@ -52,6 +52,7 @@ export default function Navbar() {
                 src="/adhiraj-urja-solar-logo.png"
                 alt="Adhiraj Urja Solar"
                 fill
+                sizes="48px"
                 className="object-contain p-1.5"
                 priority
               />
@@ -117,6 +118,7 @@ export default function Navbar() {
             type="button"
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileOpen}
+            aria-controls="mobile-navigation"
             onClick={() => setMobileOpen(!mobileOpen)}
             className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] text-white transition-all duration-300 hover:border-[#c6922e]/30 hover:bg-white/[0.08] lg:hidden"
           >
@@ -144,6 +146,7 @@ export default function Navbar() {
 
         {/* Mobile Navigation */}
         <div
+          id="mobile-navigation"
           className={`overflow-hidden border-t border-white/[0.06] transition-all duration-300 lg:hidden ${
             mobileOpen
               ? "max-h-[500px] opacity-100"
