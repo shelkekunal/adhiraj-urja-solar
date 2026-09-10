@@ -5,7 +5,7 @@ const stats = [
     description: "Homes & businesses",
   },
   {
-    value: "1000+ MW",
+    value: "500+ MW",
     label: "Installed Capacity",
     description: "Solar power delivered",
   },
@@ -127,7 +127,7 @@ export default function Stats() {
             </p>
 
              <p className="text-xs font-medium uppercase tracking-[0.16em] text-white/45">
-              Installed From Authorized Government Venodr
+              Installed From Authorized Government Vendor
             </p>
 
           </div>
