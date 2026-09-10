@@ -70,7 +70,7 @@ export default function Installations() {
   return (
     <section
       id="installations"
-      className="premium-paper relative scroll-mt-24 overflow-hidden py-24 lg:py-28"
+      className="premium-paper relative scroll-mt-24 overflow-hidden py-24 sm:py-28 lg:py-28"
     >
       {/* =====================================================
           AMBIENT BACKGROUND
@@ -104,14 +104,15 @@ export default function Installations() {
           whileInView="visible"
           viewport={{ once: true, amount: 0.25 }}
           variants={itemVariants}
-          className="mb-14 max-w-3xl"
+          className="mx-auto mb-14 max-w-3xl text-center"
         >
-          <div className="mb-5 flex items-center gap-3">
+          <div className="mb-5 flex items-center justify-center gap-3">
             <span className="h-px w-8 bg-[#c6922e]" />
 
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#61745f]">
               Our Installations
             </p>
+            <span className="h-px w-8 bg-[#c6922e]" />
           </div>
 
           <h2 className="text-4xl font-semibold leading-[1.05] tracking-[-0.04em] text-[#17201b] md:text-5xl lg:text-[56px]">
@@ -122,8 +123,7 @@ export default function Installations() {
               Real installations.
             </span>
           </h2>
-
-          <p className="mt-6 max-w-xl text-base leading-7 text-[#17201b]/60 md:text-lg md:leading-8">
+          <p className="mx-auto mt-6 max-w-xl text-base leading-7 text-[#17201b]/60 md:text-lg md:leading-8">
             A look at some of the solar installations completed by our team
             for homes and businesses.
           </p>
