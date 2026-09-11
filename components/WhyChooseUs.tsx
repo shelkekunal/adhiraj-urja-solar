@@ -84,7 +84,7 @@ export default function WhyChooseUs() {
     return (
       <section
         id="why-choose-us"
-        className="relative isolate overflow-hidden ..."
+        className="relative isolate overflow-hidden bg-[#f7f6f1] py-24 sm:py-28 lg:py-32"
       >
   
       {/* =========================================================

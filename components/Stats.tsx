@@ -16,7 +16,7 @@ const stats = [
   },
   {
     value: "25",
-    label: "Year Warranty",
+    label: "Years Warranty*",
     description: "Long-term service",
   },
 ];
@@ -90,7 +90,7 @@ export default function Stats() {
                 <p className="text-4xl font-semibold tracking-[-0.04em] text-white transition-transform duration-500 group-hover:-translate-y-1 md:text-5xl">
                   {stat.value}
                   {index === 3 && (
-                    <span className="ml-1 text-2xl text-[#d6ae62]">Years</span>
+                    <span className="ml-1 text-2xl text-[#d6ae62]"></span>
                   )}
                 </p>
 
@@ -123,10 +123,12 @@ export default function Stats() {
             </span>
 
             <p className="text-xs font-medium uppercase tracking-[0.16em] text-white/45">
-              Designed for long-term energy independence /
+              Designed for long-term energy independence 
             </p>
 
-             <p className="text-xs font-medium uppercase tracking-[0.16em] text-white/45">
+            <span className="text-white/20">·</span>
+
+            <p className="text-xs font-medium uppercase tracking-[0.16em] text-white/45">
               Installed From Authorized Government Vendor
             </p>
 

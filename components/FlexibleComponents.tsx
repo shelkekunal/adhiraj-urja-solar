@@ -78,7 +78,7 @@ export default function FlexibleComponents() {
             title="Solar Panels"
             description="We commonly work with brands such as:"
             icon={<SunMedium className="h-6 w-6" strokeWidth={1.5} />}
-            variant="gold"
+            variant="dark"
           >
             <BrandList brands={panels} variant="gold" />
           </ComponentCard>
@@ -89,9 +89,9 @@ export default function FlexibleComponents() {
             title="Inverters"
             description="We commonly work with brands such as:"
             icon={<Cpu className="h-6 w-6" strokeWidth={1.5} />}
-            variant="green"
+            variant="dark"
           >
-            <BrandList brands={inverters} variant="green" />
+            <BrandList brands={inverters} variant="gold" />
           </ComponentCard>
 
           {/* More Components */}
@@ -266,7 +266,7 @@ function ComponentCard({
   const isDark = variant === "dark";
 
   return (
-    <div
+    <article
       className={`group relative min-h-[370px] overflow-hidden rounded-[2rem] border p-7 sm:p-8 ${
         isGold
           ? "border-[#c6922e]/25 bg-gradient-to-br from-[#fffdf7] via-[#fffaf0] to-[#f7f1df] shadow-[0_18px_55px_rgba(198,146,46,0.09)]"
@@ -382,7 +382,7 @@ function ComponentCard({
           }`}
         />
       </div>
-    </div>
+    </article>
   );
 }
 

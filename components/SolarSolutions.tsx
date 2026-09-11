@@ -150,11 +150,13 @@ export default function SolarSolutions() {
             const Icon = solution.icon;
 
             return (
-              <motion.div
+
+              <motion.article
                 key={solution.number}
                 variants={cardVariants}
                 className="group relative"
-              >
+              >             
+              
                 <div className="relative min-h-[365px] overflow-hidden rounded-[2rem] border border-[#17201b]/[0.08] bg-white/80 p-7 shadow-[0_12px_40px_rgba(23,32,27,0.05)] backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 hover:border-[#c6922e]/30 hover:shadow-[0_25px_65px_rgba(23,32,27,0.10)] sm:p-8"
                 >
                   {/* Top accent */}
@@ -175,9 +177,7 @@ export default function SolarSolutions() {
                         {solution.number}
                       </span>
 
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[#17201b]/[0.08] text-[#17201b]/35 transition-all duration-300 group-hover:border-[#c6922e]/40 group-hover:bg-[#c6922e] group-hover:text-[#17201b]">
-                        <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
-                      </div>
+                      
                     </div>
 
                     {/* Icon */}
@@ -229,7 +229,7 @@ export default function SolarSolutions() {
                     <div className="absolute bottom-0 left-0 h-[2px] w-0 bg-[#c6922e] transition-all duration-500 group-hover:w-16" />
                   </div>
                 </div>
-              </motion.div>
+              </motion.article>
             );
           })}
         </motion.div>

@@ -23,7 +23,7 @@ export default function Footer() {
           </Link>
 
           <Link
-            href="#about"
+            href="#why-choose-us"
             className="transition hover:text-white"
           >
             About Us

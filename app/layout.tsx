@@ -13,10 +13,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Adhiraj Urja Solar | Solar Solutions",
+  title: "Adhiraj Urja Solar | Rooftop Solar in Pune & PCMC",
   description:
-    "Professional solar solutions for homes, shops and businesses across Pune and Maharashtra.",
-};
+  "Rooftop solar solutions for homes, shops and businesses in Pune and PCMC, with installation, subsidy assistance, net-metering and after-sales support."
+}
 
 export default function RootLayout({
   children,

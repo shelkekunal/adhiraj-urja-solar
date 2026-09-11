@@ -45,7 +45,7 @@ export default function Navbar() {
           <Link
             href="/"
             onClick={() => setMobileOpen(false)}
-            className="group flex shrink-0 items-center"
+            className="group flex shrink-0 items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c6922e] focus-visible:ring-offset-2 focus-visible:ring-offset-[#17201b]"
           >
             <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-[#f7f6f1] shadow-[0_5px_18px_rgba(0,0,0,0.15)] ring-1 ring-[#c6922e]/20 transition-all duration-300 group-hover:scale-105 group-hover:ring-[#c6922e]/50 sm:h-12 sm:w-12">
               <Image
@@ -65,7 +65,7 @@ export default function Navbar() {
               <Link
                 key={item.label}
                 href={item.href}
-                className="group relative rounded-full px-4 py-2.5 text-[13px] font-medium text-white/60 transition-colors duration-300 hover:text-white"
+                className="group relative rounded-full px-4 py-2.5 text-[13px] font-medium text-white/60 transition-colors duration-300 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c6922e] focus-visible:ring-offset-2 focus-visible:ring-offset-[#17201b]"
               >
                 {item.label}
 
@@ -82,7 +82,7 @@ export default function Navbar() {
               href="https://wa.me/917507564542"
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex items-center gap-2 rounded-full border border-white/10 px-3.5 py-2 text-[12px] font-semibold text-white/65 transition-all duration-300 hover:border-[#61745f]/40 hover:bg-white/[0.05] hover:text-white"
+              className="group flex items-center gap-2 rounded-full border border-white/10 px-3.5 py-2 text-[12px] font-semibold text-white/65 transition-all duration-300 hover:border-[#61745f]/40 hover:bg-white/[0.05] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c6922e] focus-visible:ring-offset-2 focus-visible:ring-offset-[#17201b]"
             >
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/[0.06] text-white/70 transition-all duration-300 group-hover:bg-[#61745f]/20 group-hover:text-[#d6ae62]">
                 <svg
@@ -91,7 +91,7 @@ export default function Navbar() {
                   fill="currentColor"
                   aria-hidden="true"
                 >
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.67-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.227 1.36.195 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.67-.51-.173-.008-.371.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.227 1.36.195 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
                 </svg>
               </span>
 
@@ -101,7 +101,7 @@ export default function Navbar() {
             {/* Quote Button */}
             <Link
               href="/quotation"
-              className="group relative overflow-hidden rounded-full bg-[#c6922e] px-5 py-3 text-[12px] font-bold text-[#17201b] shadow-[0_8px_22px_rgba(198,146,46,0.18)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#d6ae62] hover:shadow-[0_12px_28px_rgba(198,146,46,0.28)]"
+              className="group relative overflow-hidden rounded-full bg-[#c6922e] px-5 py-3 text-[12px] font-bold text-[#17201b] shadow-[0_8px_22px_rgba(198,146,46,0.18)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#d6ae62] hover:shadow-[0_12px_28px_rgba(198,146,46,0.28)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c6922e] focus-visible:ring-offset-2 focus-visible:ring-offset-[#17201b]"
             >
               <span className="relative z-10 flex items-center gap-2">
                 Get Solar Quote
@@ -120,7 +120,7 @@ export default function Navbar() {
             aria-expanded={mobileOpen}
             aria-controls="mobile-navigation"
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] text-white transition-all duration-300 hover:border-[#c6922e]/30 hover:bg-white/[0.08] lg:hidden"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] text-white transition-all duration-300 hover:border-[#c6922e]/30 hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c6922e] focus-visible:ring-offset-2 focus-visible:ring-offset-[#17201b] lg:hidden"
           >
             <div className="flex w-5 flex-col gap-1.5">
               <span
@@ -160,7 +160,7 @@ export default function Navbar() {
                   key={item.label}
                   href={item.href}
                   onClick={() => setMobileOpen(false)}
-                  className="group flex items-center justify-between border-b border-white/[0.06] py-4 text-sm font-medium text-white/65 transition-colors hover:text-white"
+                  className="group flex items-center justify-between border-b border-white/[0.06] py-4 text-sm font-medium text-white/65 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c6922e] focus-visible:ring-offset-2 focus-visible:ring-offset-[#17201b]"
                 >
                   <span>{item.label}</span>
 
@@ -177,7 +177,7 @@ export default function Navbar() {
                 href="https://wa.me/917507564542"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-white/80 transition-all duration-300 hover:border-[#61745f]/40 hover:bg-white/[0.07] hover:text-white"
+                className="flex items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-white/80 transition-all duration-300 hover:border-[#61745f]/40 hover:bg-white/[0.07] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c6922e] focus-visible:ring-offset-2 focus-visible:ring-offset-[#17201b]"
               >
                 WhatsApp
               </a>
@@ -185,7 +185,7 @@ export default function Navbar() {
               <Link
                 href="/quotation"
                 onClick={() => setMobileOpen(false)}
-                className="flex items-center justify-center rounded-xl bg-[#c6922e] px-4 py-3 text-sm font-bold text-[#17201b] transition-colors duration-300 hover:bg-[#d6ae62]"
+                className="flex items-center justify-center rounded-xl bg-[#c6922e] px-4 py-3 text-sm font-bold text-[#17201b] transition-colors duration-300 hover:bg-[#d6ae62] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c6922e] focus-visible:ring-offset-2 focus-visible:ring-offset-[#17201b]"
               >
                 Get Quote →
               </Link>

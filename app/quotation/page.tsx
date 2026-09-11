@@ -3,8 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-
 type CustomerType = "residential" | "commercial";
 
 type QuotationResult = {
@@ -165,153 +163,60 @@ export default function QuotationPage() {
   }
 
   async function calculateQuotation() {
-    if (!validateCurrentStep()) return;
+  if (!validateCurrentStep()) return;
 
-    setError("");
-    setIsSaving(true);
+  setError("");
+  setIsSaving(true);
 
-    /*
-     * ---------------------------------------------------------
-     * EXISTING PROVEN CALCULATION LOGIC
-     * DO NOT CHANGE
-     * ---------------------------------------------------------
-     */
-
-    const bill = Number(monthlyBill);
-    const units = Number(monthlyUnits);
-
-    let calculatedUnits = units;
-
-    if (!monthlyUnits && bill > 0) {
-      calculatedUnits = Math.ceil(bill / 12);
-    }
-
-    calculatedUnits = Math.ceil(calculatedUnits);
-
-    const requiredSystem = calculatedUnits / 120;
-
-    const recommendedSystem = Math.ceil(requiredSystem);
-
-    const estimatedGeneration =
-      recommendedSystem * 120 * 12;
-
-    const estimatedSavings =
-      estimatedGeneration * 12;
-
-    let systemCost = 0;
-    let subsidy = 0;
-
-    /*
-     * RESIDENTIAL + ON GRID
-     * Existing pricing/subsidy logic preserved.
-     */
-
-    if (
-      customerType === "residential" &&
-      systemType === "on_grid"
-    ) {
-      if (recommendedSystem === 1) {
-        systemCost = 70000;
-        subsidy = 30000;
-      } else if (recommendedSystem === 2) {
-        systemCost = 150000;
-        subsidy = 65000;
-      } else if (recommendedSystem === 3) {
-        systemCost = 210000;
-        subsidy = 78000;
-      } else if (recommendedSystem === 4) {
-        systemCost = 270000;
-        subsidy = 78000;
-      } else if (recommendedSystem === 5) {
-        systemCost = 325000;
-        subsidy = 78000;
-      } else {
-        systemCost =
-          325000 +
-          (recommendedSystem - 5) * 65000;
-
-        subsidy = 78000;
-      }
-    } else {
-      /*
-       * COMMERCIAL OR OFF GRID
-       * Existing pricing logic preserved.
-       */
-
-      systemCost = recommendedSystem * 80000;
-      subsidy = 0;
-    }
-
-    const estimatedCost = systemCost - subsidy;
-
-    const estimatedPayback =
-      estimatedSavings > 0
-        ? estimatedCost / estimatedSavings
-        : 0;
-
-    /*
-     * ---------------------------------------------------------
-     * SUPABASE
-     * ---------------------------------------------------------
-     */
-
-    const supabase = createSupabaseBrowserClient();
-
-    const { error: insertError } = await supabase
-      .from("leads")
-      .insert({
-        name: name.trim(),
-        phone: phone.trim(),
-        customer_type: customerType,
-
-        monthly_bill: monthlyBill
-          ? Math.ceil(Number(monthlyBill))
+  try {
+    const response = await fetch("/api/leads", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name,
+        phone,
+        pinCode,
+        monthlyBill: monthlyBill
+          ? Number(monthlyBill)
           : null,
+        monthlyUnits: monthlyUnits
+          ? Number(monthlyUnits)
+          : null,
+        customerType,
+        systemType,
+      }),
+    });
 
-        monthly_units: calculatedUnits,
+    const data = await response.json();
 
-        pin_code: pinCode.trim(),
-
-        system_type: systemType,
-
-        recommended_system: recommendedSystem,
-        estimated_generation: estimatedGeneration,
-        estimated_savings: estimatedSavings,
-
-        subsidy,
-        estimated_cost: estimatedCost,
-        estimated_payback: estimatedPayback,
-
-        status: "new",
-      });
-
-    if (insertError) {
-      console.error(
-        "LEAD INSERT ERROR:",
-        insertError
-      );
-
+    if (!response.ok) {
       setError(
-        "We couldn't save your quotation. Please try again."
+        data.error ||
+          "We couldn't save your quotation. Please try again."
       );
-
-      setIsSaving(false);
       return;
     }
 
-    setQuotation({
-      monthlyUnits: calculatedUnits,
-      recommendedSystem,
-      estimatedGeneration,
-      estimatedSavings,
-      subsidy,
-      estimatedCost,
-      systemType,
-      customerType,
-    });
+    if (!data.quotation) {
+      setError(
+        "We couldn't prepare your quotation. Please try again."
+      );
+      return;
+    }
 
+    setQuotation(data.quotation);
+  } catch (error) {
+    console.error("QUOTATION REQUEST ERROR:", error);
+
+    setError(
+      "We couldn't save your quotation. Please try again."
+    );
+  } finally {
     setIsSaving(false);
   }
+}
 
   function resetQuotation() {
     setStep(1);
@@ -705,7 +610,7 @@ export default function QuotationPage() {
 
               <p className="mt-6 text-sm leading-7 text-white/55">
                 Tell us about your property and electricity
-                consumption. We'll calculate an estimated
+                consumption. We&apos;ll calculate an estimated
                 solar system designed around your needs.
               </p>
 
