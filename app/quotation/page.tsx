@@ -420,7 +420,7 @@ export default function QuotationPage() {
               </div>
 
               <span className="rounded-full bg-[#61745f]/10 px-4 py-2 text-xs font-semibold text-[#61745f]">
-                {quotation.systemType === "on_grid"
+                {quotation.systemType === "On_grid"
                   ? "On-Grid System"
                   : "Hybrid-Grid System"}
               </span>

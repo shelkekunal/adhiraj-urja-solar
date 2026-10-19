@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 type CustomerType = "residential" | "commercial";
-type SystemType = "on_grid" | "off_grid";
+type SystemType = "on_grid" | "Hybrid_grid";
 
 type LeadRequest = {
   name: string;
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
 
     if (
       systemType !== "on_grid" &&
-      systemType !== "off_grid"
+      systemType !== "Hybrid_grid"
     ) {
       return NextResponse.json(
         { error: "Invalid system type." },
@@ -177,7 +177,7 @@ export async function POST(request: Request) {
       }
     } else {
       /*
-       * COMMERCIAL OR OFF GRID
+       * COMMERCIAL OR HYBRID GRID
        */
 
       systemCost = recommendedSystem * 80000;
