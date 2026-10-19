@@ -85,7 +85,7 @@ export default function ContactCTA() {
             rel="noopener noreferrer"
             className="rounded-full border border-white/15 px-8 py-4 text-sm font-semibold text-white transition-all duration-300 hover:border-white/30 hover:bg-white/5"
           >
-            WhatsApp 9766614955
+            WhatsApp 7507564542
           </a>
         </div>
       </motion.div>
