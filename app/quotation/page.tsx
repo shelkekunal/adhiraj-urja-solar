@@ -12,7 +12,7 @@ type QuotationResult = {
   estimatedSavings: number;
   subsidy: number;
   estimatedCost: number;
-  systemType: "on_grid" | "off_grid";
+  systemType: "On_grid" | "Hybrid_grid";
   customerType: CustomerType;
 };
 
@@ -49,7 +49,7 @@ export default function QuotationPage() {
   const [monthlyUnits, setMonthlyUnits] = useState("");
 
   const [systemType, setSystemType] =
-    useState<"on_grid" | "off_grid">("on_grid");
+    useState<"on_grid" | "Hybrid_grid">("on_grid");
 
   const [quotation, setQuotation] =
     useState<QuotationResult | null>(null);
@@ -422,7 +422,7 @@ export default function QuotationPage() {
               <span className="rounded-full bg-[#61745f]/10 px-4 py-2 text-xs font-semibold text-[#61745f]">
                 {quotation.systemType === "on_grid"
                   ? "On-Grid System"
-                  : "Off-Grid System"}
+                  : "Hybrid-Grid System"}
               </span>
 
             </div>
@@ -549,7 +549,7 @@ export default function QuotationPage() {
 
       </div>
 
-      <div className="relative mx-auto max-w-6xl px-5 py-7 sm:px-8 sm:py-10">
+      <div className="relative mx-auto w-full max-w-6xl px-4 py-5 sm:px-8 sm:py-10">
 
         {/* Top navigation */}
         <div className="flex items-center justify-between">
@@ -582,10 +582,10 @@ export default function QuotationPage() {
         </div>
 
         {/* Main layout */}
-        <div className="mt-10 grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
+        <div className="mt-6 grid min-w-0 gap-6 sm:mt-10 sm:gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
 
           {/* Left editorial panel */}
-          <aside className="relative overflow-hidden rounded-[2rem] bg-[#17201b] p-8 text-white shadow-2xl sm:p-10 lg:sticky lg:top-8">
+          <aside className="relative min-w-0 overflow-hidden rounded-[1.5rem] bg-[#17201b] p-5 text-white shadow-2xl sm:rounded-[2rem] sm:p-10 lg:sticky lg:top-8">
 
             <div className="absolute -right-24 -top-24 h-64 w-64 rounded-full border border-[#d5a94b]/20" />
 
@@ -651,10 +651,10 @@ export default function QuotationPage() {
           </aside>
 
           {/* Right form */}
-          <section className="rounded-[2rem] border border-[#17201b]/10 bg-white/85 p-6 shadow-xl shadow-[#17201b]/5 backdrop-blur-xl sm:p-9">
+          <section className="min-w-0 rounded-[1.5rem] border border-[#17201b]/10 bg-white/85 p-4 shadow-xl shadow-[#17201b]/5 backdrop-blur-xl sm:rounded-[2rem] sm:p-9">
 
             {/* Progress */}
-            <div className="mb-10">
+            <div className="mb-7 sm:mb-10">
 
               <div className="flex items-center justify-between">
 
@@ -715,7 +715,7 @@ export default function QuotationPage() {
             </div>
 
             {/* Step content */}
-            <div className="min-h-[460px]">
+            <div className="min-h-0 sm:min-h-[460px]">
 
               {/* STEP 1 */}
               {step === 1 && (
@@ -817,7 +817,7 @@ export default function QuotationPage() {
                     description="Enter either your monthly bill or monthly units."
                   />
 
-                  <div className="mt-10 grid gap-5 sm:grid-cols-2">
+                  <div className="mt-6 grid min-w-0 grid-cols-1 gap-4 sm:mt-10 sm:grid-cols-2 sm:gap-5">
 
                     <EnergyInput
                       label="Monthly electricity bill"
@@ -896,12 +896,12 @@ export default function QuotationPage() {
 
                     <SystemCard
                       selected={
-                        systemType === "off_grid"
+                        systemType === "Hybrid_grid"
                       }
                       onClick={() =>
-                        setSystemType("off_grid")
+                        setSystemType("Hybrid_grid")
                       }
-                      title="Off-Grid Solar"
+                      title="Hybrid-Grid Solar"
                       subtitle="Independent solar system with battery backup"
                       icon="◐"
                     />
@@ -935,7 +935,7 @@ export default function QuotationPage() {
                         value={
                           systemType === "on_grid"
                             ? "On-Grid"
-                            : "Off-Grid"
+                            : "Hybrid-Grid"
                         }
                       />
 
@@ -956,13 +956,13 @@ export default function QuotationPage() {
             )}
 
             {/* Navigation */}
-            <div className="flex items-center justify-between border-t border-[#17201b]/10 pt-6">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#17201b]/10 pt-5 sm:pt-6">
 
               {step > 1 ? (
                 <button
                   onClick={previousStep}
                   disabled={isSaving}
-                  className="rounded-xl px-4 py-3 text-sm font-semibold text-[#17201b]/50 transition hover:bg-[#17201b]/5 hover:text-[#17201b] disabled:opacity-40"
+                  className="min-h-12 shrink-0 rounded-xl px-4 py-3 text-sm font-semibold text-[#17201b]/70 transition hover:bg-[#17201b]/5 hover:text-[#17201b] disabled:opacity-40"
                 >
                   ← Back
                 </button>
@@ -973,7 +973,7 @@ export default function QuotationPage() {
               {step < 4 ? (
                 <button
                   onClick={nextStep}
-                  className="group rounded-xl bg-[#17201b] px-7 py-3.5 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#243229] hover:shadow-xl"
+                  className="group inline-flex min-h-12 max-w-full items-center justify-center rounded-xl bg-[#17201b] px-5 py-3.5 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#243229] hover:shadow-xl sm:px-7"
                 >
                   Continue
 
@@ -986,7 +986,7 @@ export default function QuotationPage() {
                 <button
                   onClick={calculateQuotation}
                   disabled={isSaving}
-                  className="group flex items-center gap-3 rounded-xl bg-[#17201b] px-7 py-3.5 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#243229] hover:shadow-xl disabled:cursor-wait disabled:opacity-70"
+                  className="group inline-flex min-h-12 max-w-full items-center justify-center gap-2 rounded-xl bg-[#17201b] px-4 py-3.5 text-left text-sm font-semibold leading-5 text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#243229] hover:shadow-xl disabled:cursor-wait disabled:opacity-70 sm:gap-3 sm:px-7"
                 >
 
                   {isSaving ? (
@@ -1062,7 +1062,7 @@ function StepHeading({
         {eyebrow}
       </p>
 
-      <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
+      <h2 className="mt-3 break-words text-2xl font-semibold tracking-tight sm:text-4xl">
         {title}
       </h2>
 
@@ -1090,7 +1090,7 @@ function SelectionCard({
   return (
     <button
       onClick={onClick}
-      className={`group relative overflow-hidden rounded-3xl border p-6 text-left transition-all duration-300 ${
+      className={`group relative min-w-0 overflow-hidden rounded-3xl border p-5 text-left transition-all duration-300 sm:p-6 ${
         selected
           ? "border-[#17201b] bg-[#17201b] text-white shadow-xl"
           : "border-[#17201b]/10 bg-[#faf9f5] hover:-translate-y-1 hover:border-[#c6922e]/40 hover:shadow-lg"
@@ -1196,7 +1196,7 @@ function EnergyInput({
         {label}
       </span>
 
-      <div className="mt-5 flex items-center">
+      <div className="mt-4 flex min-w-0 flex-wrap items-center gap-y-2 sm:mt-5 sm:flex-nowrap">
 
         {prefix && (
           <span className="mr-2 text-2xl font-semibold text-[#c6922e]">
@@ -1212,10 +1212,10 @@ function EnergyInput({
             onChange(event.target.value)
           }
           placeholder="0"
-          className="min-w-0 flex-1 bg-transparent text-4xl font-semibold tracking-tight outline-none placeholder:text-[#17201b]/10"
+          className="w-full min-w-0 flex-1 basis-20 bg-transparent text-3xl font-semibold tracking-tight outline-none placeholder:text-[#17201b]/10 sm:text-4xl"
         />
 
-        <span className="ml-2 text-xs font-semibold text-[#17201b]/35">
+        <span className="ml-auto shrink-0 text-xs font-semibold text-[#17201b]/35 sm:ml-2">
           {suffix}
         </span>
 
@@ -1247,7 +1247,7 @@ function SystemCard({
   return (
     <button
       onClick={onClick}
-      className={`group relative flex w-full items-center gap-5 rounded-3xl border p-5 text-left transition-all duration-300 ${
+      className={`group relative flex w-full min-w-0 items-center gap-3 rounded-3xl border p-4 text-left transition-all duration-300 sm:gap-5 sm:p-5 ${
         selected
           ? "border-[#17201b] bg-[#17201b] text-white shadow-xl"
           : "border-[#17201b]/10 bg-[#faf9f5] hover:-translate-y-1 hover:border-[#c6922e]/40 hover:shadow-lg"
