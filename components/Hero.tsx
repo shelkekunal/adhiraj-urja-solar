@@ -50,7 +50,7 @@ export default function Hero() {
               <span className="h-px w-8 bg-[#c6922e]" />
 
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#61745f]">
-                Solar Energy · Pune & PCMC
+                Solar Energy · Pune, Maharashtra
               </p>
             </div>
 
@@ -221,36 +221,6 @@ export default function Hero() {
               </div>
             </div>
 
-            {/* =================================================
-                FLOATING QUOTATION CARD
-            ================================================= */}
-
-
-            <div className="premium-float absolute -bottom-4 left-4 z-20 w-[210px] rounded-2xl border border-[#17201b]/10 bg-[#faf9f5]/95 p-5 shadow-[0_20px_50px_rgba(23,32,27,0.16)] backdrop-blur-xl md:-left-8">
-              <div className="mb-4 flex items-center justify-between">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#61745f]">
-                  Solar Planning
-                </p>
-
-                <span className="h-2 w-2 rounded-full bg-[#c6922e] premium-pulse" />
-              </div>
-
-              <p className="text-sm font-semibold text-[#17201b]">
-                Know what your roof needs.
-              </p>
-
-              <p className="mt-2 text-xs leading-5 text-[#17201b]/50">
-                Get a requirement-based solar recommendation.
-              </p>
-
-              <Link
-                href="/quotation"
-                className="mt-4 inline-flex items-center gap-2 text-xs font-semibold text-[#17201b] transition-colors hover:text-[#c6922e]"
-              >
-                Get started
-                <span>→</span>
-              </Link>
-            </div>
 
             {/* =================================================
                 SERVICE AREA
@@ -262,7 +232,7 @@ export default function Hero() {
               </p>
 
               <p className="mt-1 text-sm font-semibold text-[#d6ae62]">
-                Pune · PCMC
+                Pune . Maharashtra 
               </p>
             </div>
           </div>

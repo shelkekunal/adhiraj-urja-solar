@@ -12,7 +12,7 @@ const installations = [
   },
   {
     image: "/installations/installation-02.jpeg",
-    title: "Rooftop Solar Installation",
+    title: "Commercial Solar Installation",
     location: "Completed Project",
   },
   {

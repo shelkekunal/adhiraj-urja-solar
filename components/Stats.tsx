@@ -5,7 +5,7 @@ const stats = [
     description: "Homes & businesses",
   },
   {
-    value: "500+ MW",
+    value: "800+ kW",
     label: "Installed Capacity",
     description: "Solar power delivered",
   },
@@ -126,8 +126,8 @@ export default function Stats() {
               Designed for long-term energy independence 
             </p>
 
-            <span className="text-white/20">·</span>
-
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-[#c6922e]" />
+                    
             <p className="text-xs font-medium uppercase tracking-[0.16em] text-white/45">
               Installed From Authorized Government Vendor
             </p>

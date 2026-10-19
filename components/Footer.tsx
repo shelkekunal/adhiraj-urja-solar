@@ -10,7 +10,7 @@ export default function Footer() {
           </p>
 
           <p className="mt-1 text-sm">
-            Rooftop solar solutions in Pune & Pimpri-Chinchwad
+            Rooftop solar solutions in Pune & Maharashtra
           </p>
         </div>
 
